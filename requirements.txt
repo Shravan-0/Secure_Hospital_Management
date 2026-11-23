@@ -1,0 +1,6 @@
+# Core desktop application uses Python standard library.
+cryptography>=42.0.0
+reportlab>=4.0.0
+# Optional static/dependency checks:
+bandit>=1.7.9
+pip-audit>=2.7.3

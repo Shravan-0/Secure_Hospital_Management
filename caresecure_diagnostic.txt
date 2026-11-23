@@ -1,0 +1,159 @@
+﻿
+  main.py:48:        tk.Label(card, text="Password", bg="white", fg=NAVY).pack(anchor="w")
+  main.py:49:        self.password = ttk.Entry(card, width=36, show="*", font=("Segoe UI", 11))
+  main.py:50:        self.password.pack(pady=(5,20), ipady=6)
+> main.py:51:        ttk.Button(card, text="Sign in", command=self.do_login).pack(fill="x", ipady=5)
+  main.py:52:        tk.Label(card, text="Demo accounts are listed in README.md", bg="white",
+  main.py:53:                 fg="#64748B", font=("Segoe UI", 9)).pack(pady=(18,0))
+  main.py:54:        self.password.bind("<Return>", lambda e: self.do_login())
+  main.py:55:        self.username.focus_set()
+  main.py:56:
+  main.py:62:            from security.audit_logger import log_action
+  main.py:63:            log_action(self.user,"SESSION_TIMEOUT","Logged out after 2 minutes of inactivity")
+  main.py:64:            self.user=None
+> main.py:65:            messagebox.showwarning("Session expired","You were signed out after inactivity. Sign in again with password and 
+OTP.")
+  main.py:66:            self.login_screen()
+  main.py:67:        self.root.after(15000,self._check_idle)
+  main.py:68:
+  main.py:69:    def do_login(self):
+  main.py:70:        status,user,extra = password_stage(self.username.get(), self.password.get())
+  main.py:71:        if status == "locked":
+  main.py:72:            messagebox.showerror("Account locked",f"Account locked until {extra}. Contact the administrator."); return
+  main.py:73:        if status == "invalid":
+> main.py:74:            messagebox.showerror("Sign in failed","Invalid username or password."); return
+  main.py:75:        if status == "no_contact":
+  main.py:76:            messagebox.showerror("Contact details required","Ask the administrator to add an email address or mobile number 
+to this account."); return
+  main.py:77:        self.pending_user=user; self.pending_channels=extra
+  main.py:78:        if status == "choose": self.channel_screen(); return
+  main.py:79:        try:
+  main.py:107:    def finish_otp(self,code):
+  main.py:108:        user=complete_otp(self.pending_user,code.strip())
+  main.py:109:        if not user:
+> main.py:110:            messagebox.showerror("OTP failed","Invalid or expired OTP. Request a new code by signing in again."); return
+  main.py:111:        self.user=user; self._touch(); self.dashboard()
+  main.py:112:
+  main.py:113:    def dashboard(self):
+  main.py:114:        self.clear()
+  main.py:115:        shell = tk.Frame(self.root, bg=BG)
+  main.py:138:            menu.append(("Prescriptions", self.prescription_page))
+  main.py:139:        for label, fn in menu:
+  main.py:140:            ttk.Button(side, text=label, command=fn).pack(fill="x", padx=14, pady=5, ipady=5)
+> main.py:141:        ttk.Button(side, text="Sign out", command=self.logout).pack(side="bottom", fill="x", padx=14, pady=18, ipady=5)
+  main.py:142:        self.overview()
+  main.py:143:
+  main.py:144:    def heading(self, title, subtitle=""):
+  main.py:145:        for w in self.content.winfo_children(): w.destroy()
+  main.py:146:        tk.Label(self.content, text=title, bg=BG, fg=NAVY,
+  main.py:180:                 font=("Segoe UI",14,"bold")).pack(anchor="w")
+  main.py:181:        tk.Label(note, text="Access is controlled by role. Passwords are hashed. Sensitive actions are recorded in the 
+audit log.",
+  main.py:182:                 bg="white", fg="#475569", wraplength=760, justify="left").pack(anchor="w", pady=8)
+> main.py:183:        tk.Label(note, text=f"Signed in as {self.user['role']}. Only authorized modules are shown.",
+  main.py:184:                 bg="white", fg=TEAL).pack(anchor="w")
+  main.py:185:
+  main.py:186:    def patient_page(self):
+  main.py:187:        self.heading("Patient management", "Register and find patient records")
+  main.py:188:        if self.user["role"] in ("Admin","Receptionist"):
+  main.py:281:        except Exception as e: messagebox.showerror("Cannot create account",str(e))
+  main.py:282:
+  main.py:283:    def logs_page(self):
+> main.py:284:        self.heading("Security activity", "Recent sign-ins and important actions; sensitive clinical note contents are not 
+logged")
+  main.py:285:        rows=services.audit_logs(self.user)
+  main.py:286:        self.table(("created_at","username","action","details"),rows)
+  main.py:287:
+  main.py:288:    def alerts_page(self):
+  main.py:289:        self.heading("Security alerts","Accounts locked after five failed password attempts")
+  main.py:326:        self.heading("SQL Injection Demonstration Lab","Isolated local examples; the production login remains 
+parameterized and protected")
+  main.py:327:        box=tk.Frame(self.content,bg="white",padx=16,pady=14); box.pack(fill="x")
+  main.py:328:        tk.Label(box,text="Test input (use only in this local teaching lab):",bg="white").pack(anchor="w")
+> main.py:329:        payload=ttk.Entry(box,width=48); payload.insert(0,"' OR '1'='1' --"); payload.pack(anchor="w",pady=8)
+  main.py:330:        out=tk.Label(box,text="Run the comparison to see why parameterized queries matter.",bg="white",fg=NAVY)
+  main.py:331:        out.pack(anchor="w",pady=8)
+  main.py:332:        def run():
+  main.py:333:            value=payload.get()
+  main.py:334:            # Vulnerable example is intentionally isolated and uses a disposable in-memory database.
+  main.py:344:        ttk.Button(box,text="Run isolated comparison",command=run).pack(anchor="w")
+  main.py:345:
+  main.py:346:    def prescription_page(self):
+> main.py:347:        self.heading("Digitally signed prescriptions","Doctor can sign prescriptions only for patients assigned to their 
+appointments")
+  main.py:348:        form=tk.Frame(self.content,bg="white",padx=14,pady=12); form.pack(fill="x")
+  main.py:349:        tk.Label(form,text="Patient ID",bg="white").grid(row=0,column=0,padx=5)
+  main.py:350:        pid=ttk.Entry(form,width=10); pid.grid(row=0,column=1,padx=5)
+  main.py:351:        tk.Label(form,text="Prescription / medicines and dosage",bg="white").grid(row=0,column=2,padx=5)
+  main.py:352:        report=ttk.Entry(form,width=48); report.grid(row=0,column=3,padx=5)
+> main.py:353:        ttk.Button(form,text="Create signed 
+prescription",command=lambda:self.create_prescription(pid.get(),report.get())).grid(row=0,column=4,padx=5)
+  main.py:354:        with connect() as con:
+  main.py:355:            rows=con.execute("SELECT pr.id,p.full_name,pr.version,pr.created_at FROM prescriptions pr JOIN patients p ON 
+p.id=pr.patient_id JOIN doctors d ON d.id=pr.doctor_id WHERE d.user_id=? ORDER BY pr.id DESC",(self.user["id"],)).fetchall()
+  main.py:356:        tree=self.table(("id","full_name","version","created_at"),rows)
+> main.py:357:        ttk.Button(self.content,text="Verify selected prescription signature",
+  main.py:358:                   command=lambda:self.verify_prescription(tree)).pack(anchor="w",pady=8)
+  main.py:359:
+  main.py:360:    def verify_prescription(self,tree):
+  main.py:361:        selected=tree.selection()
+  main.py:362:        if not selected:
+  main.py:368:                WHERE pr.id=? AND d.user_id=?""",(prescription_id,self.user["id"])).fetchone()
+  main.py:369:        if not row:
+  main.py:370:            messagebox.showerror("Not authorized","You cannot verify another doctor's prescription."); return
+> main.py:371:        from security.prescription_signing import verify_payload
+> main.py:372:        valid=verify_payload(row["report_text"],row["signature"])
+> main.py:373:        messagebox.showinfo("Signature verification","VALID â€“ prescription content is authentic." if valid
+> main.py:374:                            else "INVALID â€“ signature verification failed.")
+  main.py:375:
+  main.py:376:    def create_prescription(self,pid,text):
+  main.py:377:        try:
+  main.py:378:            pid=int(pid); text=text.strip()
+  main.py:379:            if not text: raise ValueError("Enter prescription details.")
+  main.py:380:            with connect() as con:
+> main.py:381:                doc=con.execute("SELECT id FROM doctors WHERE user_id=?",(self.user["id"],)).fetchone()
+> main.py:382:                assigned=con.execute("SELECT 1 FROM appointments WHERE patient_id=? AND 
+doctor_id=?",(pid,doc["id"])).fetchone()
+> main.py:383:                if not assigned: raise PermissionError("You can prescribe only for your assigned patients.")
+  main.py:384:                patient=con.execute("SELECT full_name,email,phone FROM patients WHERE id=?",(pid,)).fetchone()
+  main.py:385:                if not patient: raise ValueError("Patient not found.")
+> main.py:386:                
+payload=f"patient_id={pid}|patient={patient['full_name']}|doctor_id={doc['id']}|doctor={self.user['username']}|prescription={text}"
+> main.py:387:                from security.prescription_signing import sign_payload
+> main.py:388:                sig=sign_payload(payload)
+> main.py:389:                con.execute("INSERT INTO prescriptions(patient_id,doctor_id,report_text,signature) 
+VALUES(?,?,?,?)",(pid,doc["id"],payload,sig))
+  main.py:390:                con.commit()
+  main.py:391:            from security.audit_logger import log_action
+> main.py:392:            log_action(self.user,"PRESCRIPTION_SIGNED",f"Signed prescription for patient ID {pid}")
+> main.py:393:            if messagebox.askyesno("Prescription saved","Digitally signed report saved.\n\nSend it to the patient's 
+registered email and/or mobile now?"):
+  main.py:394:                try:
+> main.py:395:                    from security.delivery import send_patient_report
+  main.py:396:                    from io import BytesIO
+  main.py:397:                    from reportlab.pdfgen import canvas
+  main.py:398:                    from reportlab.lib.pagesizes import A4
+  main.py:399:                    buf=BytesIO(); pdf=canvas.Canvas(buf,pagesize=A4); y=800
+> main.py:400:                    for line in ["CareSecure - Digitally Signed Patient Report","",*payload.split("|"),"","Ed25519 
+signature:",sig]:
+  main.py:401:                        pdf.drawString(45,y,str(line)[:115]); y-=22
+  main.py:402:                        if y<70: pdf.showPage(); y=800
+  main.py:403:                    pdf.save()
+> main.py:404:                    send_patient_report(patient["email"],patient["phone"],payload,sig,buf.getvalue())
+> main.py:405:                    log_action(self.user,"PRESCRIPTION_DELIVERED",f"Signed report delivery submitted for patient ID {pid}")
+> main.py:406:                    messagebox.showinfo("Delivery submitted","Report sent to configured email/SMS channels.")
+  main.py:407:                except Exception as delivery_error: messagebox.showerror("Report delivery failed",str(delivery_error))
+> main.py:408:            messagebox.showinfo("Success","Prescription digitally signed and saved.")
+  main.py:409:            self.prescription_page()
+  main.py:410:        except Exception as e: messagebox.showerror("Cannot create prescription",str(e))
+  main.py:411:
+  main.py:412:    def logout(self):
+  main.py:413:        from security.audit_logger import log_action
+> main.py:414:        log_action(self.user,"LOGOUT","User signed out")
+  main.py:415:        self.user=None
+  main.py:416:        self.login_screen()
+  main.py:417:
+  main.py:418:if __name__ == "__main__":
+  main.py:419:    initialize()
+
+
